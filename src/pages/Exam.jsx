@@ -13,6 +13,7 @@ export default function Exam() {
   const [submitting, setSubmitting] = useState(false);
   const student = JSON.parse(localStorage.getItem('student') || 'null');
   const timerRef = useRef(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (!student) {
@@ -86,11 +87,14 @@ export default function Exam() {
   }
 
   async function handleSubmit() {
-    if (submitting) return;
+    // حماية من التسليم المزدوج (لو التايمر خلص في نفس لحظة ضغط الطالب على الزرار يدوي)
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+
     setSubmitting(true);
     clearInterval(timerRef.current);
 
-    // حفظ كل الإجابات
+    // حفظ كل الإجابات - upsert بدل insert عشان لو حصل أي تكرار محاولة يتصلح لوحده
     const rows = questions.map((q) => ({
       attempt_id: attemptId,
       question_id: q.id,
@@ -98,7 +102,9 @@ export default function Exam() {
     }));
 
     if (rows.length > 0) {
-      await supabase.from('student_answers').insert(rows);
+      await supabase
+        .from('student_answers')
+        .upsert(rows, { onConflict: 'attempt_id,question_id' });
     }
 
     // تغيير الحالة لـ submitted، ده هيشغل الـ trigger بتاع التصحيح التلقائي في Supabase
