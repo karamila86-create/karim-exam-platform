@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
 
 export default function Login() {
@@ -17,16 +17,15 @@ export default function Login() {
       .from('students')
       .select('*')
       .eq('phone', phone)
-      .single();
+      .maybeSingle();
 
     setLoading(false);
 
     if (dbError || !data) {
-      setError('رقم الهاتف مش موجود، تأكد من الرقم أو كلم المدرس');
+      setError('الرقم ده مش مسجل عندنا. لازم تسجل حساب جديد الأول.');
       return;
     }
 
-    // تخزين بيانات الطالب محليًا للجلسة الحالية
     localStorage.setItem('student', JSON.stringify(data));
     navigate('/lessons');
   }
@@ -44,11 +43,24 @@ export default function Login() {
             onChange={(e) => setPhone(e.target.value)}
             required
           />
-          {error && <p style={{ color: '#ef4444' }}>{error}</p>}
+          {error && (
+            <p style={{ color: '#ef4444' }}>
+              {error}{' '}
+              <Link to="/register" style={{ color: '#38bdf8', fontWeight: 'bold' }}>
+                سجّل حساب جديد
+              </Link>
+            </p>
+          )}
           <button type="submit" disabled={loading}>
             {loading ? 'جاري التحقق...' : 'دخول'}
           </button>
         </form>
+        <p style={{ marginTop: 16 }}>
+          لسه معملتش حساب؟{' '}
+          <Link to="/register" style={{ color: '#38bdf8' }}>
+            سجّل من هنا
+          </Link>
+        </p>
       </div>
     </div>
   );
