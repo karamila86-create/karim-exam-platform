@@ -26,6 +26,11 @@ export default function Login() {
       return;
     }
 
+    if (!data.is_approved) {
+      setError('حسابك لسه محتاج موافقة المعلم. استنى شوية وحاول تاني.');
+      return;
+    }
+
     localStorage.setItem('student', JSON.stringify(data));
     navigate('/lessons');
   }
@@ -46,9 +51,11 @@ export default function Login() {
           {error && (
             <p style={{ color: '#ef4444' }}>
               {error}{' '}
-              <Link to="/register" style={{ color: '#38bdf8', fontWeight: 'bold' }}>
-                سجّل حساب جديد
-              </Link>
+              {error.includes('تسجل حساب جديد') && (
+                <Link to="/register" style={{ color: '#38bdf8', fontWeight: 'bold' }}>
+                  سجّل حساب جديد
+                </Link>
+              )}
             </p>
           )}
           <button type="submit" disabled={loading}>
