@@ -81,3 +81,69 @@ input, select {
   color: #38bdf8;
   margin-bottom: 8px;
 }
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: #334155;
+  color: #f1f5f9;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tab-btn.active {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.approval-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.approval-info h3 {
+  margin: 0 0 8px 0;
+}
+
+.approval-info p {
+  margin: 4px 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.approve-btn {
+  background: #22c55e;
+  color: #fff;
+}
+
+.approve-btn:hover {
+  background: #16a34a;
+}
+
+.reject-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+.empty {
+  color: #94a3b8;
+}
