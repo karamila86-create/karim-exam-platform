@@ -287,3 +287,87 @@ input, select {
   color: #22c55e;
   font-weight: 600;
 }
+
+.symbol-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  max-width: 100%;
+}
+
+.symbol-btn {
+  background: #334155;
+  color: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  min-width: 32px;
+  cursor: pointer;
+}
+
+.symbol-btn:hover {
+  background: #475569;
+}
+
+.image-upload {
+  margin-bottom: 12px;
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.option-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #0f172a;
+  border-radius: 8px;
+}
+
+.option-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #38bdf8;
+  min-width: 24px;
+  padding-top: 8px;
+}
+
+.option-fields {
+  flex: 1;
+}
+
+.radio-correct {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #cbd5e1;
+  white-space: nowrap;
+  padding-top: 8px;
+}
+
+.radio-correct input {
+  width: auto;
+  margin: 0;
+}
+
+.q-image {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.opt-image {
+  max-width: 80px;
+  max-height: 60px;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}

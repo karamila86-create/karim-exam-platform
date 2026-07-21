@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient.js';
+import SymbolToolbar from '../components/SymbolToolbar.jsx';
+import ImageUpload from '../components/ImageUpload.jsx';
 
 const ADMIN_PASSWORD = 'admin123';
 
@@ -329,8 +331,16 @@ function QuestionsView({ exam, onBack }) {
   const [loading, setLoading] = useState(true);
   const [qType, setQType] = useState('mcq');
   const [qText, setQText] = useState('');
-  const [options, setOptions] = useState(['', '', '', '']);
+  const [qImage, setQImage] = useState(null);
+  const [options, setOptions] = useState([
+    { text: '', image_url: null },
+    { text: '', image_url: null },
+    { text: '', image_url: null },
+    { text: '', image_url: null },
+  ]);
   const [correctAnswer, setCorrectAnswer] = useState('');
+  const qTextRef = useRef(null);
+  const optionRefs = useRef([]);
 
   async function load() {
     setLoading(true);
@@ -345,8 +355,12 @@ function QuestionsView({ exam, onBack }) {
 
   useEffect(() => { load(); }, [exam.id]);
 
-  function setOption(i, val) {
-    setOptions((prev) => prev.map((o, idx) => (idx === i ? val : o)));
+  function setOptionText(i, val) {
+    setOptions((prev) => prev.map((o, idx) => (idx === i ? { ...o, text: val } : o)));
+  }
+
+  function setOptionImage(i, url) {
+    setOptions((prev) => prev.map((o, idx) => (idx === i ? { ...o, image_url: url } : o)));
   }
 
   async function addQuestion(e) {
@@ -356,8 +370,11 @@ function QuestionsView({ exam, onBack }) {
     let opts = null;
     let correct = correctAnswer;
     if (qType === 'mcq') {
-      opts = options.filter((o) => o.trim());
-      if (!correct) correct = opts[0] || '';
+      const filled = options
+        .map((o, i) => ({ label: String.fromCharCode(65 + i), text: o.text.trim(), image_url: o.image_url }))
+        .filter((o) => o.text || o.image_url);
+      opts = filled;
+      if (!correct) correct = filled[0]?.label || 'A';
     } else if (qType === 'true_false') {
       opts = ['صح', 'خطأ'];
       if (!correct) correct = 'صح';
@@ -369,10 +386,13 @@ function QuestionsView({ exam, onBack }) {
       question_type: qType,
       options: opts,
       correct_answer: correct,
+      question_image_url: qImage || null,
       order_index: questions.length,
     });
     if (!error) {
-      setQText(''); setOptions(['', '', '', '']); setCorrectAnswer('');
+      setQText(''); setQImage(null);
+      setOptions([{ text: '', image_url: null }, { text: '', image_url: null }, { text: '', image_url: null }, { text: '', image_url: null }]);
+      setCorrectAnswer('');
       load();
     }
   }
@@ -394,8 +414,31 @@ function QuestionsView({ exam, onBack }) {
             <h3>{idx + 1}. {q.question_text}</h3>
             <button className="delete-btn" onClick={() => deleteQuestion(q.id)}>حذف</button>
           </div>
+          {q.question_image_url && (
+            <img src={q.question_image_url} alt="سؤال" className="q-image" />
+          )}
           <p className="qtype-badge">{q.question_type === 'mcq' ? 'اختيار من متعدد' : 'صح/خطأ'}</p>
-          {q.options && (
+          {q.options && q.question_type === 'mcq' && Array.isArray(q.options) && typeof q.options[0] === 'object' && (
+            <ul>
+              {q.options.map((o, i) => (
+                <li key={i} className={o.label === q.correct_answer ? 'correct-opt' : ''}>
+                  <strong>{o.label}.</strong> {o.text}
+                  {o.image_url && <img src={o.image_url} alt="option" className="opt-image" />}
+                  {o.label === q.correct_answer && ' ✓'}
+                </li>
+              ))}
+            </ul>
+          )}
+          {q.options && q.question_type === 'mcq' && Array.isArray(q.options) && typeof q.options[0] === 'string' && (
+            <ul>
+              {q.options.map((o, i) => (
+                <li key={i} className={o === q.correct_answer ? 'correct-opt' : ''}>
+                  <strong>{String.fromCharCode(65 + i)}.</strong> {o} {o === q.correct_answer && '✓'}
+                </li>
+              ))}
+            </ul>
+          )}
+          {q.options && q.question_type === 'true_false' && (
             <ul>
               {q.options.map((o, i) => (
                 <li key={i} className={o === q.correct_answer ? 'correct-opt' : ''}>
@@ -415,22 +458,51 @@ function QuestionsView({ exam, onBack }) {
             <option value="mcq">اختيار من متعدد</option>
             <option value="true_false">صح / خطأ</option>
           </select>
+
           <label className="field-label">نص السؤال</label>
-          <input placeholder="اكتب السؤال" value={qText} onChange={(e) => setQText(e.target.value)} required />
+          <SymbolToolbar targetRef={qTextRef} onInsert={(v) => setQText(v)} />
+          <input
+            ref={qTextRef}
+            placeholder="اكتب السؤال"
+            value={qText}
+            onChange={(e) => setQText(e.target.value)}
+            required
+          />
+          <ImageUpload label="صورة السؤال (اختياري)" onUploaded={setQImage} />
 
           {qType === 'mcq' && (
             <>
               <label className="field-label">الاختيارات</label>
               {options.map((o, i) => (
-                <input
-                  key={i}
-                  placeholder={`اختيار ${i + 1}`}
-                  value={o}
-                  onChange={(e) => setOption(i, e.target.value)}
-                />
+                <div className="option-row" key={i}>
+                  <span className="option-label">{String.fromCharCode(65 + i)}</span>
+                  <div className="option-fields">
+                    <SymbolToolbar
+                      targetRef={{ current: optionRefs.current[i] }}
+                      onInsert={(v) => setOptionText(i, v)}
+                    />
+                    <input
+                      ref={(el) => { optionRefs.current[i] = el; }}
+                      placeholder={`نص اختيار ${String.fromCharCode(65 + i)}`}
+                      value={o.text}
+                      onChange={(e) => setOptionText(i, e.target.value)}
+                    />
+                    <ImageUpload
+                      label={`صورة اختيار ${String.fromCharCode(65 + i)} (اختياري)`}
+                      onUploaded={(url) => setOptionImage(i, url)}
+                    />
+                  </div>
+                  <label className="radio-correct">
+                    <input
+                      type="radio"
+                      name="correct"
+                      checked={correctAnswer === String.fromCharCode(65 + i)}
+                      onChange={() => setCorrectAnswer(String.fromCharCode(65 + i))}
+                    />
+                    صحيحة
+                  </label>
+                </div>
               ))}
-              <label className="field-label">الإجابة الصحيحة (اكتبها زي ما كتبتها فوق)</label>
-              <input placeholder="الإجابة الصحيحة" value={correctAnswer} onChange={(e) => setCorrectAnswer(e.target.value)} />
             </>
           )}
           {qType === 'true_false' && (

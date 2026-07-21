@@ -163,19 +163,29 @@ export default function Exam() {
 
       {questions.map((q, idx) => (
         <div className="card" key={q.id}>
+          {q.question_image_url && (
+            <img src={q.question_image_url} alt="question" className="q-image" />
+          )}
           <h3>
             {idx + 1}. {q.question_text}
           </h3>
           {q.question_type === 'mcq' &&
-            (q.options || []).map((opt) => (
-              <button
-                key={opt}
-                className={`option-btn ${answers[q.id] === opt ? 'selected' : ''}`}
-                onClick={() => selectAnswer(q.id, opt)}
-              >
-                {opt}
-              </button>
-            ))}
+            (q.options || []).map((opt, i) => {
+              const isObj = typeof opt === 'object' && opt !== null;
+              const label = isObj ? opt.label : String.fromCharCode(65 + i);
+              const text = isObj ? opt.text : opt;
+              const imgUrl = isObj ? opt.image_url : null;
+              return (
+                <button
+                  key={i}
+                  className={`option-btn ${answers[q.id] === label ? 'selected' : ''}`}
+                  onClick={() => selectAnswer(q.id, label)}
+                >
+                  <strong>{label}.</strong> {text}
+                  {imgUrl && <img src={imgUrl} alt="option" className="opt-image" />}
+                </button>
+              );
+            })}
           {q.question_type === 'true_false' &&
             [t('exam_true'), t('exam_false')].map((opt) => (
               <button
@@ -186,14 +196,6 @@ export default function Exam() {
                 {opt}
               </button>
             ))}
-          {q.question_type === 'essay' && (
-            <textarea
-              rows={4}
-              style={{ width: '100%', borderRadius: 8, padding: 10 }}
-              value={answers[q.id] || ''}
-              onChange={(e) => selectAnswer(q.id, e.target.value)}
-            />
-          )}
         </div>
       ))}
 
