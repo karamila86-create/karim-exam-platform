@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
+import { useLanguage } from '../lib/i18n.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 export default function Login() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -22,12 +25,12 @@ export default function Login() {
     setLoading(false);
 
     if (dbError || !data) {
-      setError('الرقم ده مش مسجل عندنا. لازم تسجل حساب جديد الأول.');
+      setError(t('login_notRegistered'));
       return;
     }
 
     if (!data.is_approved) {
-      setError('حسابك لسه محتاج موافقة المعلم. استنى شوية وحاول تاني.');
+      setError(t('login_notApproved'));
       return;
     }
 
@@ -37,13 +40,14 @@ export default function Login() {
 
   return (
     <div className="container">
+      <LanguageSwitcher />
       <div className="card" style={{ marginTop: 60 }}>
-        <h1>منصة كريم التعليمية</h1>
-        <p>اكتب رقم موبايلك المسجل عندنا عشان تدخل</p>
+        <h1>{t('login_title')}</h1>
+        <p>{t('login_subtitle')}</p>
         <form onSubmit={handleLogin}>
           <input
             type="tel"
-            placeholder="رقم الموبايل"
+            placeholder={t('login_phonePlaceholder')}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
@@ -51,21 +55,21 @@ export default function Login() {
           {error && (
             <p style={{ color: '#ef4444' }}>
               {error}{' '}
-              {error.includes('تسجل حساب جديد') && (
+              {error === t('login_notRegistered') && (
                 <Link to="/register" style={{ color: '#38bdf8', fontWeight: 'bold' }}>
-                  سجّل حساب جديد
+                  {t('login_registerLink')}
                 </Link>
               )}
             </p>
           )}
           <button type="submit" disabled={loading}>
-            {loading ? 'جاري التحقق...' : 'دخول'}
+            {loading ? t('login_checking') : t('login_submit')}
           </button>
         </form>
         <p style={{ marginTop: 16 }}>
-          لسه معملتش حساب؟{' '}
+          {t('login_noAccount')}{' '}
           <Link to="/register" style={{ color: '#38bdf8' }}>
-            سجّل من هنا
+            {t('login_registerHere')}
           </Link>
         </p>
       </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
+import { useLanguage } from '../lib/i18n.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
@@ -10,6 +12,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -23,7 +26,7 @@ export default function Register() {
       .maybeSingle();
 
     if (existing) {
-      setError('الرقم ده مسجل بالفعل، سجل دخول من صفحة الدخول مباشرة');
+      setError(t('register_exists'));
       setLoading(false);
       return;
     }
@@ -38,52 +41,54 @@ export default function Register() {
     setLoading(false);
 
     if (insertError) {
-      setError('حصل خطأ أثناء التسجيل، حاول تاني');
+      setError(t('register_error'));
       return;
     }
 
-    alert('تم التسجيل بنجاح! دلوقتي سجل دخول برقمك');
+    alert(t('register_success'));
     navigate('/');
   }
 
   return (
     <div className="container">
+      <LanguageSwitcher />
       <div className="card" style={{ marginTop: 60 }}>
-        <h1>تسجيل حساب جديد</h1>
-        <p>املأ بياناتك عشان تقدر تدخل المنصة</p>
+        <h1>{t('register_title')}</h1>
+        <p>{t('register_subtitle')}</p>
         <form onSubmit={handleRegister}>
           <input
-            placeholder="الاسم بالكامل"
+            placeholder={t('register_fullNamePlaceholder')}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
           />
           <input
             type="tel"
-            placeholder="رقم موبايلك"
+            placeholder={t('register_phonePlaceholder')}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
           />
           <input
             type="tel"
-            placeholder="رقم موبايل ولي الأمر"
+            placeholder={t('register_parentPhonePlaceholder')}
             value={parentPhone}
             onChange={(e) => setParentPhone(e.target.value)}
             required
           />
           <input
-            placeholder="الصف الدراسي"
+            placeholder={t('register_gradePlaceholder')}
             value={gradeLevel}
             onChange={(e) => setGradeLevel(e.target.value)}
           />
           {error && <p style={{ color: '#ef4444' }}>{error}</p>}
           <button type="submit" disabled={loading}>
-            {loading ? 'جاري التسجيل...' : 'سجّل حساب'}
+            {loading ? t('register_loading') : t('register_submit')}
           </button>
         </form>
         <p style={{ marginTop: 16 }}>
-          عندك حساب بالفعل؟ <Link to="/" style={{ color: '#38bdf8' }}>سجل دخول من هنا</Link>
+          {t('register_haveAccount')}{' '}
+          <Link to="/" style={{ color: '#38bdf8' }}>{t('register_loginHere')}</Link>
         </p>
       </div>
     </div>

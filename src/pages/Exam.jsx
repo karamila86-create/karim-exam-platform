@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
+import { useLanguage } from '../lib/i18n.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 
 export default function Exam() {
   const { examId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -51,7 +54,6 @@ export default function Exam() {
     setExam(examData);
     setQuestions(questionsData || []);
 
-    // إنشاء أو استكمال محاولة الامتحان
     const { data: existingAttempt } = await supabase
       .from('exam_attempts')
       .select('*')
@@ -90,7 +92,6 @@ export default function Exam() {
     setSubmitting(true);
     clearInterval(timerRef.current);
 
-    // حفظ كل الإجابات
     const rows = questions.map((q) => ({
       attempt_id: attemptId,
       question_id: q.id,
@@ -101,7 +102,6 @@ export default function Exam() {
       await supabase.from('student_answers').insert(rows);
     }
 
-    // تغيير الحالة لـ submitted، ده هيشغل الـ trigger بتاع التصحيح التلقائي في Supabase
     await supabase
       .from('exam_attempts')
       .update({ status: 'submitted', submitted_at: new Date().toISOString() })
@@ -111,7 +111,12 @@ export default function Exam() {
   }
 
   if (!exam || secondsLeft === null) {
-    return <div className="container">جاري تحميل الامتحان...</div>;
+    return (
+      <div className="container">
+        <LanguageSwitcher />
+        <div>{t('exam_loading')}</div>
+      </div>
+    );
   }
 
   const minutes = Math.floor(secondsLeft / 60);
@@ -119,8 +124,9 @@ export default function Exam() {
 
   return (
     <div className="container">
+      <LanguageSwitcher />
       <div className="timer">
-        ⏱ الوقت المتبقي: {minutes}:{seconds.toString().padStart(2, '0')}
+        {t('exam_timeLeft')}: {minutes}:{seconds.toString().padStart(2, '0')}
       </div>
       <h2>{exam.title}</h2>
 
@@ -140,7 +146,7 @@ export default function Exam() {
               </button>
             ))}
           {q.question_type === 'true_false' &&
-            ['صح', 'خطأ'].map((opt) => (
+            [t('exam_true'), t('exam_false')].map((opt) => (
               <button
                 key={opt}
                 className={`option-btn ${answers[q.id] === opt ? 'selected' : ''}`}
@@ -161,7 +167,7 @@ export default function Exam() {
       ))}
 
       <button onClick={handleSubmit} disabled={submitting}>
-        {submitting ? 'جاري التسليم...' : 'سلّم الامتحان'}
+        {submitting ? t('exam_submitting') : t('exam_submit')}
       </button>
     </div>
   );
