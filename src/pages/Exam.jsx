@@ -14,6 +14,7 @@ export default function Exam() {
   const [attemptId, setAttemptId] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [timeBlocked, setTimeBlocked] = useState(null);
   const student = JSON.parse(localStorage.getItem('student') || 'null');
   const timerRef = useRef(null);
 
@@ -53,6 +54,20 @@ export default function Exam() {
 
     setExam(examData);
     setQuestions(questionsData || []);
+
+    if (examData && examData.start_time && examData.end_time) {
+      const now = new Date();
+      const start = new Date(examData.start_time);
+      const end = new Date(examData.end_time);
+      if (now < start) {
+        setTimeBlocked({ reason: 'early', start: examData.start_time });
+        return;
+      }
+      if (now > end) {
+        setTimeBlocked({ reason: 'ended', end: examData.end_time });
+        return;
+      }
+    }
 
     const { data: existingAttempt } = await supabase
       .from('exam_attempts')
@@ -111,6 +126,22 @@ export default function Exam() {
   }
 
   if (!exam || secondsLeft === null) {
+    if (timeBlocked) {
+      return (
+        <div className="container">
+          <LanguageSwitcher />
+          <div className="card" style={{ marginTop: 60, textAlign: 'center' }}>
+            <h2>{t('exam_notAvailable')}</h2>
+            {timeBlocked.reason === 'early' && timeBlocked.start && (
+              <p>{t('exam_opensAt')}: {new Date(timeBlocked.start).toLocaleString('ar-EG')}</p>
+            )}
+            {timeBlocked.reason === 'ended' && (
+              <p>{t('exam_ended')}</p>
+            )}
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="container">
         <LanguageSwitcher />

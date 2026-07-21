@@ -52,6 +52,9 @@ export const translations = {
     exam_submitting: 'جاري التسليم...',
     exam_true: 'صح',
     exam_false: 'خطأ',
+    exam_notAvailable: 'الامتحان مش متاح دلوقتي',
+    exam_opensAt: 'يفتح في',
+    exam_ended: 'الامتحان خلص ومش متاح دلوقتي',
 
     // Result
     result_grading: 'جاري تصحيح الامتحان...',
@@ -109,6 +112,9 @@ export const translations = {
     exam_submitting: 'Submitting...',
     exam_true: 'True',
     exam_false: 'False',
+    exam_notAvailable: 'The exam is not available right now',
+    exam_opensAt: 'Opens at',
+    exam_ended: 'The exam has ended and is no longer available',
 
     // Result
     result_grading: 'Grading your exam...',
